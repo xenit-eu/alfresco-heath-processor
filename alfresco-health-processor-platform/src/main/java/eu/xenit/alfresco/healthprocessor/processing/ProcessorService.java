@@ -1,6 +1,7 @@
 package eu.xenit.alfresco.healthprocessor.processing;
 
 import com.google.common.util.concurrent.RateLimiter;
+import eu.xenit.alfresco.healthprocessor.fixer.NodeFixService;
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy;
 import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.reporter.ReportsService;
@@ -30,6 +31,7 @@ public class ProcessorService {
     private final List<HealthProcessorPlugin> plugins;
     private final ReportsService reportsService;
     private final StateCache stateCache;
+    private final NodeFixService fixService;
 
     @SuppressWarnings("UnstableApiUsage")
     @Nullable
@@ -121,7 +123,9 @@ public class ProcessorService {
 
         Set<NodeHealthReport> reports = validateNodeReports(nodesToProcess, pluginReports, plugin);
 
-        transactionHelper.inNewTransaction(() -> reportsService.processReports(plugin.getClass(), reports), false);
+        Set<NodeHealthReport> healthAfterFixing = fixService.fixUnhealthyNodes(plugin, reports);
+
+        transactionHelper.inNewTransaction(() -> reportsService.processReports(plugin.getClass(), healthAfterFixing), false);
     }
 
     private Set<NodeHealthReport> validateNodeReports(Set<NodeRef> nodesToProcess, Set<NodeHealthReport> reports, HealthProcessorPlugin plugin) {

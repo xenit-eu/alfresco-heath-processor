@@ -44,6 +44,15 @@
     </div>
 
     <div class="column-full">
+        <@section label="Fixers"/>
+        <ul>
+            <#list healthprocessor.fixers.fixers as fixer>
+                <li>${fixer.name} [enabled: ${fixer.enabled?c}]</li>
+            </#list>
+        </ul>
+    </div>
+
+    <div class="column-full">
         <@section label="Reporters"/>
         <ul>
             <#list healthprocessor.reporters.reporters as reporter>
