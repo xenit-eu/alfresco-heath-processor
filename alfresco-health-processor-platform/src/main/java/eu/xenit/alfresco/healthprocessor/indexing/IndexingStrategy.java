@@ -32,4 +32,9 @@ public interface IndexingStrategy {
         return new HashMap<>();
     }
 
+    @Nonnull
+    default IndexingProgress getIndexingProgress() {
+        return IndexingProgress.NONE;
+    }
+
 }

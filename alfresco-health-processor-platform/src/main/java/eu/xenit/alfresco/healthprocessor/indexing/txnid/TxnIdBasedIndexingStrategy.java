@@ -1,7 +1,9 @@
 package eu.xenit.alfresco.healthprocessor.indexing.txnid;
 
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingConfiguration;
+import eu.xenit.alfresco.healthprocessor.indexing.IndexingProgress;
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy;
+import eu.xenit.alfresco.healthprocessor.indexing.SimpleIndexingProgress;
 import eu.xenit.alfresco.healthprocessor.indexing.TrackingComponent;
 import eu.xenit.alfresco.healthprocessor.indexing.TrackingComponent.NodeInfo;
 import eu.xenit.alfresco.healthprocessor.util.AttributeStore;
@@ -34,6 +36,7 @@ public class TxnIdBasedIndexingStrategy implements IndexingStrategy {
     private final IndexingConfiguration configuration;
     private final TrackingComponent trackingComponent;
     private final AttributeStore attributeStore;
+    private IndexingProgress indexingProgress = IndexingProgress.NONE;
 
     @Nonnull
     @Override
@@ -48,17 +51,25 @@ public class TxnIdBasedIndexingStrategy implements IndexingStrategy {
         return ret;
     }
 
+    @Nonnull
+    @Override
+    public IndexingProgress getIndexingProgress() {
+        return indexingProgress;
+    }
+
     @Override
     public void onStart() {
         done = false;
         nodeQueue.clear();
         initializeStartTxnId();
         initializeMaxTxnId();
+        indexingProgress = new SimpleIndexingProgress(nextStartTxnIdToFetch, maxTxnIdInclusive, () -> nextStartTxnIdToFetch - 1);
     }
 
     @Override
     public void onStop() {
         attributeStore.removeAttributes(ATTR_KEY_LAST_PROCESSED_TXN_ID);
+        indexingProgress = IndexingProgress.NONE;
     }
 
     @Override
