@@ -63,7 +63,7 @@ public class TxnIdBasedIndexingStrategy implements IndexingStrategy {
         nodeQueue.clear();
         initializeStartTxnId();
         initializeMaxTxnId();
-        indexingProgress = new SimpleIndexingProgress(nextStartTxnIdToFetch, maxTxnIdInclusive, () -> nextStartTxnIdToFetch);
+        indexingProgress = new SimpleIndexingProgress(nextStartTxnIdToFetch, maxTxnIdInclusive, () -> nextStartTxnIdToFetch - 1);
     }
 
     @Override

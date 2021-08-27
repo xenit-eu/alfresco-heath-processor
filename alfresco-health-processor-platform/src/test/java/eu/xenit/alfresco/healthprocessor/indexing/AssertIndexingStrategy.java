@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
+import javax.annotation.Nonnull;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 public class AssertIndexingStrategy implements IndexingStrategy {
@@ -18,15 +19,18 @@ public class AssertIndexingStrategy implements IndexingStrategy {
     private RuntimeException toThrow;
     private int numberOfOnStartInvocations;
     private int numberOfGetNextNodeIdsInvocations;
+    private int numberOfRequestedNodes;
 
     @Override
     public void onStart() {
         numberOfOnStartInvocations++;
+        numberOfRequestedNodes = 0;
     }
 
     @Override
     public Set<NodeRef> getNextNodeIds(int amount) {
         numberOfGetNextNodeIdsInvocations++;
+        numberOfRequestedNodes+=amount;
         if (toThrow != null) {
             throw toThrow;
         }
@@ -39,6 +43,12 @@ public class AssertIndexingStrategy implements IndexingStrategy {
         }
 
         return ret;
+    }
+
+    @Nonnull
+    @Override
+    public IndexingProgress getIndexingProgress() {
+        return new SimpleIndexingProgress(0, nodeQueue.size(), () -> numberOfRequestedNodes);
     }
 
     public void nextThrow(RuntimeException e) {
